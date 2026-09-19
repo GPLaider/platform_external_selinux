@@ -1035,8 +1035,16 @@ static int apply_rules(struct cil_tree_node *node, uint32_t *finished __attribut
 			cil_log(CIL_WARN, "Found a neverallow rule.\n");
 		}
 		break;
-	case CIL_BOOLEANIF:
 	case CIL_AVRULEX:
+		rule = node->data;
+		if (rule->rule_kind != CIL_AVRULE_NEVERALLOW) {
+			rc = cil_avrulex_to_policydb(pdb, db, node->data);
+		}
+		else {
+			cil_log(CIL_WARN, "Found a neverallowx rule.\n");
+		}
+		break;
+	case CIL_BOOLEANIF:
 	case CIL_ROLEALLOW: // Unsupported rule statement.
 	default:
 		break;

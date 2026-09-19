@@ -254,6 +254,17 @@ int cil_type_rule_to_policydb(policydb_t *pdb, const struct cil_db *db, struct c
 int cil_avrule_to_policydb(policydb_t *pdb, const struct cil_db *db, struct cil_avrule *cil_avrule);
 
 /**
+ * Insert a CIL extended permission rule into an existing policydb.
+ *
+ * @param[in] pdb The policy database to insert the rule into.
+ * @param[in] db The CIL database containing the rule symbols.
+ * @param[in] cil_avrulex The extended permission rule datum.
+ *
+ * @return SEPOL_OK upon success or an error otherwise.
+ */
+int cil_avrulex_to_policydb(policydb_t *pdb, const struct cil_db *db, struct cil_avrule *cil_avrulex);
+
+/**
  * Insert cil booleanif structure into sepol policydb.  This populates the
  * policydb conditional list.  Each conditional node contains an expression
  * and true/false avtab_ptr lists that point into te_cond_avtab.

@@ -4562,6 +4562,56 @@ static int avrulex_compare(hashtab_t h
 	return a->source_type != b->source_type || a->target_type != b->target_type || a->target_class != b->target_class || a->specified != b->specified;
 }
 
+int cil_avrulex_to_policydb(policydb_t *pdb, const struct cil_db *db,
+			    struct cil_avrule *cil_avrulex)
+{
+	int rc = SEPOL_ERR;
+	hashtab_t ioctl_table = NULL;
+	hashtab_t nlmsg_table = NULL;
+	struct cil_args_binary args = {
+		.db = db,
+		.pdb = pdb,
+	};
+
+	ioctl_table = hashtab_create(avrulex_hash, avrulex_compare,
+				       AVRULEX_TABLE_SIZE);
+	if (!ioctl_table) {
+		goto exit;
+	}
+
+	nlmsg_table = hashtab_create(avrulex_hash, avrulex_compare,
+				       AVRULEX_TABLE_SIZE);
+	if (!nlmsg_table) {
+		goto exit;
+	}
+
+	args.avrulex_ioctl_table = ioctl_table;
+	args.avrulex_nlmsg_table = nlmsg_table;
+
+	rc = cil_avrulex_to_hashtable(pdb, db, cil_avrulex, &args);
+	if (rc != SEPOL_OK) {
+		goto exit;
+	}
+
+	rc = hashtab_map(ioctl_table, __cil_avrulex_ioctl_to_policydb, pdb);
+	if (rc != SEPOL_OK) {
+		goto exit;
+	}
+
+	rc = hashtab_map(nlmsg_table, __cil_avrulex_nlmsg_to_policydb, pdb);
+
+exit:
+	if (ioctl_table) {
+		hashtab_map(ioctl_table, __cil_avrulex_xperm_destroy, NULL);
+		hashtab_destroy(ioctl_table);
+	}
+	if (nlmsg_table) {
+		hashtab_map(nlmsg_table, __cil_avrulex_xperm_destroy, NULL);
+		hashtab_destroy(nlmsg_table);
+	}
+	return rc;
+}
+
 int cil_binary_create(const struct cil_db *db, sepol_policydb_t **policydb)
 {
 	int rc = SEPOL_ERR;
